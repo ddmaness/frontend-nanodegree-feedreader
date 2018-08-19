@@ -77,7 +77,7 @@ $(function () {
         });
         //tests that the feed contains atleast one entry after loadFeed is called
         it('there is at least one .entry element in the .feed container when loadFeed is called', function (done) {
-            expect(document.getElementsByClassName('feed')[0].children.length).toBeGreaterThan(0);
+            expect(document.querySelectorAll('.feed .entry').length).toBeGreaterThan(0);
             done();
         });
     });
