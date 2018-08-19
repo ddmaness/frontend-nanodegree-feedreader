@@ -1,72 +1,105 @@
-/* feedreader.js
- *
- * This is the spec file that Jasmine will read and contains
- * all of the tests that will be run against your application.
- */
+//this file contains jasmine tests for various aspects of the feed reader
 
-/* We're placing all of our tests within the $() function,
- * since some of these tests may require DOM elements. We want
- * to ensure they don't run until the DOM is ready.
- */
-$(function() {
-    /* This is our first test suite - a test suite just contains
-    * a related set of tests. This suite is all about the RSS
-    * feeds definitions, the allFeeds variable in our application.
-    */
-    describe('RSS Feeds', function() {
-        /* This is our first test - it tests to make sure that the
+$(function () {
+    'use strict';
+
+    //tests various aspects of the RSS feed
+    describe('RSS Feeds', function () {
+        /* make sure that the
          * allFeeds variable has been defined and that it is not
-         * empty. Experiment with this before you get started on
-         * the rest of this project. What happens when you change
-         * allFeeds in app.js to be an empty array and refresh the
-         * page?
+         * empty.
          */
-        it('are defined', function() {
+        it('are defined', function () {
             expect(allFeeds).toBeDefined();
             expect(allFeeds.length).not.toBe(0);
         });
 
+        //tests that the url of the feed elements are defined and not empty
+        it('url is defined and not empty', function () {
+            allFeeds.forEach(function (elem) {
+                expect(elem.url).toBeDefined();
+                if (elem.url !== undefined) {
+                    expect(typeof elem.url).toBe('string');
+                    if (typeof elem.url === 'string') {
+                        expect(elem.url.trim().length).not.toEqual(0);
+                    }
+                }
+            });
+        });
 
-        /* TODO: Write a test that loops through each feed
-         * in the allFeeds object and ensures it has a URL defined
-         * and that the URL is not empty.
-         */
-
-
-        /* TODO: Write a test that loops through each feed
-         * in the allFeeds object and ensures it has a name defined
-         * and that the name is not empty.
-         */
+        //tests that the name of the feed elements are defined and not empty
+        it('name is defined and not empty', function () {
+            allFeeds.forEach(function (elem) {
+                expect(elem.name).toBeDefined();
+                if (elem.name !== undefined) {
+                    expect(typeof elem.name).toBe('string');
+                    if (typeof elem.name === 'string') {
+                        expect(elem.name.trim().length).not.toBe(0);
+                    }
+                }
+            });
+        });
     });
 
+    //tests various aspects of the menu
+    describe('the menu', function () {
+        let menu = document.getElementsByTagName('body')[0];
+        let menuBurger = document.getElementsByClassName('menu-icon-link')[0];
 
-    /* TODO: Write a new test suite named "The menu" */
+        //tests that the menu is closed when the page initally loads
+        it('is closed by default', function () {
+            expect(menu.classList.contains('menu-hidden')).toBe(true);
+        });
 
-        /* TODO: Write a test that ensures the menu element is
-         * hidden by default. You'll have to analyze the HTML and
-         * the CSS to determine how we're performing the
-         * hiding/showing of the menu element.
-         */
+        //tests that the menu hides toggles its hidden state when propmted
+        it('menu toggles between show and hide on click', function () {
+            spyOn(menuBurger, 'onclick');
+            //simulate click on menu burger
+            menuBurger.click();
+            //check to see if onclick event triggered and if it opened the menu
+            expect(menuBurger.onclick).toHaveBeenCalled();
+            expect(menu.classList.contains('menu-hidden')).toEqual(false);
+            //simulate click on menu burger
+            menuBurger.click();
+            //check to see if onclick event triggered and if it closed the menu
+            expect(menuBurger.onclick).toHaveBeenCalled();
+            expect(menu.classList.contains('menu-hidden')).toEqual(true);
+        });
+    });
 
-         /* TODO: Write a test that ensures the menu changes
-          * visibility when the menu icon is clicked. This test
-          * should have two expectations: does the menu display when
-          * clicked and does it hide when clicked again.
-          */
+    //tests the initial entries in the feed
+    describe('Initial Entries', function () {
+        //ensures that the loadFeed async function is called before the test is run
+        beforeEach(function (done) {
+            loadFeed(0, function () {
+                done();
+            });
+        });
+        //tests that the feed contains atleast one entry after loadFeed is called
+        it('there is at least one .entry element in the .feed container when loadFeed is called', function (done) {
+            expect(document.getElementsByClassName('feed')[0].children.length).toBeGreaterThan(0);
+            done();
+        });
+    });
 
-    /* TODO: Write a new test suite named "Initial Entries" */
+    //tests that selecting a new feed to be loaded behaves as expected
+    describe('New Feed Selection', function () {
+        let initialEntries, newEntries;
 
-        /* TODO: Write a test that ensures when the loadFeed
-         * function is called and completes its work, there is at least
-         * a single .entry element within the .feed container.
-         * Remember, loadFeed() is asynchronous so this test will require
-         * the use of Jasmine's beforeEach and asynchronous done() function.
-         */
-
-    /* TODO: Write a new test suite named "New Feed Selection" */
-
-        /* TODO: Write a test that ensures when a new feed is loaded
-         * by the loadFeed function that the content actually changes.
-         * Remember, loadFeed() is asynchronous.
-         */
+        //calls the loadFeed async function twice and captures the resulting feed before testing
+        beforeEach(function (done) {
+            loadFeed(0, function () {
+                initialEntries = document.getElementsByClassName('feed')[0].innerHTML;
+                loadFeed(1, function () {
+                    newEntries = document.getElementsByClassName('feed')[0].innerHTML;
+                    done();
+                });
+            });
+        });
+        //checks to see if the new feed loaded is different from the inital feed
+        it('content changes when new feed is loaded', function (done) {
+            expect(initialEntries).not.toEqual(newEntries);
+            done();
+        });
+    });
 }());
